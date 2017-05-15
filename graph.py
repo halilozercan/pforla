@@ -161,12 +161,11 @@ for i, seq in enumerate(bank):
     #   sequence size   : len(seq)
     seqid = seq.comment.decode("utf-8").split(" ")[0]
     print('%d: %s: %d letters' % (i, seqid, len(seq)))
-    nseqs += 1
 
     seeds = solid_kmers(seq, graph, KMER_SIZE)
     print('#solid kmers in sequence: %d' % len(seeds))
 
-    if len(seeds) == 0:
+    if len(seeds) == 0 or len(seeds) / len(seq) < 1/20:
         continue
 
     clusters = []
@@ -185,6 +184,35 @@ for i, seq in enumerate(bank):
     read_path = path_graph(seq, clusters)
 
     pathgraph = PathGraph()
+    for path in read_path:
+        # pathgraph.add_vertex(str(path[0]))
+        # pathgraph.add_vertex(str(path[1]))
+        pathgraph.add_edge(str(path[0]), str(path[1]), path[3])
+
+    # ================= REVERSE ================================
+    from Bio.Seq import Seq
+    seq.sequence = str(Seq(seq.sequence.decode()).reverse_complement()).encode()
+    seeds = solid_kmers(seq, graph, KMER_SIZE)
+    print('#REVERSE solid kmers in sequence: %d' % len(seeds))
+
+    if len(seeds) == 0 or len(seeds) / len(seq) < 1/20:
+        continue
+
+    clusters = []
+    safe = True
+    for j in range(len(seeds)):
+        if safe:
+            clusters.append([])
+
+        clusters[-1] += [seeds[j]]
+        last_index = seeds[j][1]
+
+        if j + 1 < len(seeds):
+            safe = ((seeds[j + 1][1] - seeds[j][1]) > 1)
+
+    print('Total cluster count %d seed' % len(clusters))
+    read_path = path_graph(seq, clusters)
+
     for path in read_path:
         # pathgraph.add_vertex(str(path[0]))
         # pathgraph.add_vertex(str(path[1]))
