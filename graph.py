@@ -151,7 +151,7 @@ total_read_length = 0
 
 read_paths = []
 for i, seq in enumerate(bank):
-    if i > 10:
+    if i > first_n_reads:
         continue
     # 'seq' is of type 'Sequence'.
     # Accessing 'Sequence' internals is done as follows:
@@ -204,10 +204,11 @@ for i, seq in enumerate(bank):
 
     total_read_length += len(seq)
 
-    print("Total path found %d %d" % (total_path_found, total_read_length))
     print(shortest_path)
     print(total_weight)
     # pprint.pprint(read_path)
     read_paths.append((read_path, shortest_path, total_weight))
 
+print("==============================================================")
+print("Total path found %d %d" % (total_path_found, total_read_length))
 pickle.dump(read_paths, open(out_file, 'wb'))
